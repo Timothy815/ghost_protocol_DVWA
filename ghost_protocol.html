@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GHOST PROTOCOL // C2 DASHBOARD</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #050505;
+            --terminal-green: #00ff41;
+            --dim-green: #008f11;
+            --alert-red: #ff3333;
+            --kali-blue: #23a3ff;
+        }
+        body {
+            background-color: var(--bg-color);
+            color: #ccc;
+            font-family: 'JetBrains Mono', monospace;
+            overflow: hidden;
+            height: 100vh;
+        }
+        .crt::before {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 50;
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+        }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #000; }
+        ::-webkit-scrollbar-thumb { background: #333; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--dim-green); }
+        .hud-border {
+            border: 1px solid #1f2937;
+            position: relative;
+        }
+        .hud-border::after {
+            content: ''; position: absolute; bottom: 0; right: 0;
+            width: 8px; height: 8px; border-bottom: 2px solid var(--terminal-green); border-right: 2px solid var(--terminal-green);
+        }
+        .hud-border::before {
+            content: ''; position: absolute; top: 0; left: 0;
+            width: 8px; height: 8px; border-top: 2px solid var(--terminal-green); border-left: 2px solid var(--terminal-green);
+        }
+        .hidden-display { display: none !important; }
+        .flex-display { display: flex !important; }
+    </style>
+</head>
+<body class="crt">
+
+    <!-- INTRO SPLASH -->
+    <div id="splashScreen" class="fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center text-center p-4">
+        <h1 class="text-7xl md:text-9xl font-black text-green-500 mb-2 tracking-tighter" style="font-family: 'Share Tech Mono'; text-shadow: 0 0 20px rgba(0,255,0,0.5);">GHOST<br>PROTOCOL</h1>
+        <div class="w-64 h-1 bg-green-900 mb-8 overflow-hidden rounded">
+            <div class="h-full bg-green-500 animate-[loading_2s_ease-in-out]"></div>
+        </div>
+        <button id="initBtn" class="group relative px-8 py-4 bg-transparent border border-green-600 text-green-500 font-bold uppercase tracking-widest hover:bg-green-500 hover:text-black transition-all">
+            <span class="absolute inset-0 w-full h-full bg-green-500/10 opacity-0 group-hover:opacity-100 transition-opacity"></span>
+            Initialize Uplink
+        </button>
+        <p class="mt-6 text-xs text-gray-600 font-mono">SECURE CONNECTION // ENCRYPTED // T.L.P. RED</p>
+    </div>
+
+    <!-- MAIN DASHBOARD -->
+    <div id="dashboard" class="hidden-display flex flex-col h-screen">
+
+        <!-- TOP NAV -->
+        <header class="h-14 bg-gray-900 border-b border-gray-800 flex items-center justify-between px-4 z-40 shrink-0">
+            <div class="flex items-center gap-6">
+                <span class="text-green-500 font-bold tracking-widest text-lg" style="font-family: 'Share Tech Mono'">GHOST PROTOCOL</span>
+                <nav class="hidden md:flex gap-1">
+                    <button class="tabBtn" data-view="missions" class="px-4 py-1 border-b-2 text-sm font-mono transition-colors border-transparent text-gray-500 hover:text-gray-300">MISSIONS</button>
+                    <button class="tabBtn" data-view="terminal" class="px-4 py-1 border-b-2 text-sm font-mono transition-colors border-transparent text-gray-500 hover:text-gray-300">TERMINAL (LIVE)</button>
+                    <button class="tabBtn" data-view="target" class="px-4 py-1 border-b-2 text-sm font-mono transition-colors border-transparent text-gray-500 hover:text-gray-300">TARGET (DVWA)</button>
+                </nav>
+            </div>
+            <div class="flex items-center gap-4 font-mono text-xs md:text-sm">
+                <div class="px-3 py-1 bg-gray-800 rounded border border-gray-700">
+                    <span class="text-gray-400">XP:</span> <span class="text-white font-bold" id="xpDisplay">0</span>
+                </div>
+                <div class="px-3 py-1 bg-gray-800 rounded border border-gray-700">
+                    <span class="text-gray-400">RANK:</span> <span class="text-yellow-500 font-bold" id="rankDisplay">SCRIPT KIDDIE</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- MAIN CONTENT AREA -->
+        <div class="flex-1 overflow-hidden relative">
+
+            <!-- VIEW: MISSIONS -->
+            <div id="view-missions" class="h-full flex flex-col md:flex-row">
+                <!-- Mission List -->
+                <div class="w-full md:w-80 bg-gray-950 border-r border-gray-800 overflow-y-auto flex flex-col shrink-0">
+                    <div class="p-4 border-b border-gray-800">
+                        <h3 class="text-green-400 font-bold text-sm">OPERATIONS</h3>
+                    </div>
+                    <div id="missionsList" class="flex-1 overflow-y-auto"></div>
+                </div>
+
+                <!-- Mission Details -->
+                <div class="flex-1 flex flex-col overflow-hidden">
+                    <div class="flex-1 overflow-y-auto p-6 space-y-6">
+                        <div>
+                            <h2 id="missionTitle" class="text-3xl text-white font-bold mb-2"></h2>
+                            <div id="missionType" class="text-xs bg-gray-800 text-gray-300 px-2 py-1 rounded font-mono inline-block"></div>
+                        </div>
+
+                        <div>
+                            <h4 class="text-green-400 font-bold mb-2">BRIEFING</h4>
+                            <div id="missionBriefing" class="text-green-400/90 font-mono text-sm leading-relaxed"></div>
+                        </div>
+
+                        <div>
+                            <h4 class="text-yellow-400 font-bold mb-2">💡 HINT</h4>
+                            <div id="missionHint" class="text-yellow-400/80 font-mono text-sm leading-relaxed"></div>
+                        </div>
+
+                        <div id="intelSection">
+                            <div id="intelLocked" class="flex flex-col items-center justify-center text-center py-8">
+                                <p class="text-gray-500 mb-4">🔒 Tactical Intel locked - submit flag to unlock</p>
+                                <button id="unlockIntelBtn" class="px-4 py-2 bg-green-900/30 border border-green-600 text-green-400 hover:bg-green-800 transition-colors text-sm">SUBMIT FLAG TO UNLOCK</button>
+                            </div>
+                            <div id="intelUnlocked" class="hidden-display space-y-4 animate-[fadeIn_0.5s]">
+                                <div>
+                                    <h4 class="text-blue-400 font-bold mb-2">⚡ TACTICAL INTEL (POST-EXPLOITATION)</h4>
+                                    <p id="tacticalIntel" class="text-blue-400/80 font-mono text-sm"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Flag Submission -->
+                    <div class="border-t border-gray-800 p-4 shrink-0 bg-gray-900">
+                        <label class="text-xs text-gray-500 font-mono block mb-2">SUBMIT FLAG</label>
+                        <div class="flex gap-2">
+                            <input type="text" id="flagInput" placeholder="flag{...}" class="flex-1 bg-gray-900 border border-gray-700 text-white p-2 pl-3 font-mono text-sm focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500"/>
+                            <button id="submitFlagBtn" class="px-4 py-2 bg-green-900/30 hover:bg-green-800 text-green-400 border border-green-600 font-mono text-sm transition-colors">SUBMIT</button>
+                        </div>
+                        <p id="flagMessage" class="h-4 mt-2 text-xs font-mono text-center"></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW: TERMINAL -->
+            <div id="view-terminal" class="hidden-display h-full bg-black flex flex-col items-center justify-center">
+                <div class="bg-[#101010] p-2 flex justify-between items-center border-b border-gray-800 w-full">
+                    <span class="text-xs text-gray-500 font-mono">CONNECTION: <span class="text-green-500">ESTABLISHED (PORT 8081)</span></span>
+                    <span class="text-xs text-blue-500 font-mono">ROOT@KALI</span>
+                </div>
+                <div class="flex flex-col items-center justify-center flex-1 gap-4 px-4 text-center">
+                    <h2 class="text-2xl text-green-500 font-mono">TERMINAL ACCESS</h2>
+                    <p class="text-gray-400 text-sm max-w-md">
+                        The web-based terminal opens in a new tab for optimal compatibility and input responsiveness.
+                    </p>
+                    <button id="launchTerminalBtn" class="px-6 py-3 bg-green-900 hover:bg-green-800 text-green-400 border border-green-600 font-mono text-sm transition-colors">
+                        ▶ LAUNCH TERMINAL (NEW TAB)
+                    </button>
+                    <p class="text-xs text-gray-600 mt-4">Press ENTER to skip login (passwordless root)</p>
+                </div>
+            </div>
+
+            <!-- VIEW: TARGET (DVWA) -->
+            <div id="view-target" class="hidden-display h-full bg-gray-900 flex flex-col">
+                <div class="bg-gray-800 border-b border-gray-700 p-3 flex justify-between items-center">
+                    <span class="text-xs text-gray-400 font-mono">TARGET: <span class="text-red-400">DVWA (Port 80)</span></span>
+                    <span class="text-xs text-gray-400">Live iframe</span>
+                </div>
+                <iframe src="http://localhost" class="flex-1 border-0 w-full" allow="same-origin"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game State
+        const gameState = {
+            gameStarted: false,
+            view: 'missions',
+            currentMissionIdx: 0,
+            xp: 0,
+            rank: 'SCRIPT KIDDIE',
+            flagInput: '',
+            msg: '',
+            msgType: '',
+            missions: [
+                {
+                    code: "OP-001",
+                    title: "The Gatekeeper",
+                    type: "Brute Force",
+                    briefing: "Our intelligence indicates that the target system is protected by a legacy authentication mechanism with severe credential weaknesses. The admin account is the crown jewel—it grants access to sensitive internal systems and user databases. However, the system administrator has committed a cardinal sin of security: they've implemented a password policy so weak that dictionary attacks become viable. Your mission is to breach the login portal and establish initial access through credential discovery. This is reconnaissance—establish the foothold. Time is critical; once you're in, the real operation begins.",
+                    hint: "Navigate to <code>http://localhost/vulnerabilities/brute/</code> and locate the login form. Test authentication with weak password combinations. Use <strong>Hydra</strong> for automated testing or test common credentials manually against the admin account.",
+                    tactical_intel: "The admin account uses a simple, dictionary-based password. After discovering it through brute force, submit it as your flag to prove initial access.",
+                    tool: "Hydra / Burp Suite",
+                    flag: "password",
+                    unlocked: true,
+                    completed: false
+                },
+                {
+                    code: "OP-002",
+                    title: "The Pipeline",
+                    type: "Command Injection",
+                    briefing: "You're now inside the network. Our analysts discovered a diagnostic utility exposed on the internal network—an innocent-looking ping tool that the admins use for network troubleshooting. But like many legacy systems, it was built without proper input validation. The developers trusted user input implicitly, creating a direct pipeline to the underlying operating system. Your objective: weaponize this trust by injecting shell commands and proving you can execute arbitrary code on the server. This demonstrates shell access—the gateway to complete system control.",
+                    hint: "Access <code>http://localhost/vulnerabilities/exec/</code> and locate an input field that appears to execute ping commands. Experiment with special shell characters like <code>;</code>, <code>|</code>, or <code>&</code> to break out of the intended command and execute your own.",
+                    tactical_intel: "When you successfully execute a command that wasn't part of the original ping utility (like <code>whoami</code> or <code>id</code>), you've proven command injection. Construct the proper payload and submit the corresponding flag.",
+                    tool: "Browser / Curl",
+                    flag: "flag{pipeline_master}",
+                    unlocked: false,
+                    completed: false
+                },
+                {
+                    code: "OP-003",
+                    title: "The Imposter",
+                    type: "CSRF",
+                    briefing: "The system's authentication may be strong, but its authorization is blind. We've identified a critical vulnerability: the application makes state-changing decisions based solely on HTTP requests, without verifying that the request genuinely originated from an authenticated user. This is your gateway to psychological infiltration. Craft a forged request that the system will execute on behalf of an admin user, without their knowledge or consent. The application lacks cross-site request forgery token protection—it cannot distinguish between a legitimate user action and your malicious forgery.",
+                    hint: "Navigate to <code>http://localhost/vulnerabilities/csrf/</code> and locate forms that perform actions (like changing user data). Examine the HTML source to see if CSRF tokens are present. Try crafting a forged request to modify something without the user's direct action.",
+                    tactical_intel: "CSRF vulnerabilities exist when an application trusts authenticated session cookies without validating a unique token. Once you successfully trigger an unauthorized action through forged requests, you've proven the vulnerability.",
+                    tool: "Browser Developer Tools / Burp",
+                    flag: "flag{csrf_success}",
+                    unlocked: false,
+                    completed: false
+                },
+                {
+                    code: "OP-004",
+                    title: "The Archive",
+                    type: "File Inclusion (LFI)",
+                    briefing: "Every system has an archive—a repository of system secrets. The application implements a file inclusion feature, ostensibly to serve documents from a controlled directory. But the developers failed to restrict path traversal. By manipulating file paths, you can navigate outside the intended directory and access the entire filesystem. Your target is the system's user database, stored in plain text at the root level. Prove you can read arbitrary system files and extract sensitive system information.",
+                    hint: "Access <code>http://localhost/vulnerabilities/fi/</code> and locate a parameter that appears to load files. Try using path traversal sequences like <code>../</code> to navigate up from the intended directory.",
+                    tactical_intel: "The Linux system password file contains all user accounts and privilege levels. Once you discover the superuser entry through path traversal, you've proven local file disclosure.",
+                    tool: "Browser / curl",
+                    flag: "root:x:0:0",
+                    unlocked: false,
+                    completed: false
+                },
+                {
+                    code: "OP-005",
+                    title: "The Heist",
+                    type: "SQL Injection",
+                    briefing: "The crown jewel awaits: the database. It's the vault where all user data, credentials, and secrets are stored. The application's login mechanism directly interpolates user input into SQL queries without sanitization—a catastrophic oversight. With surgical precision, you'll inject SQL commands that manipulate the query logic itself. Bypass authentication entirely. Extract the complete database contents. This is the ultimate intelligence operation—not just reading what they show you, but accessing what they're trying to hide.",
+                    hint: "Access <code>http://localhost/vulnerabilities/sqli/</code> and locate a login form. Try entering SQL syntax into the input fields (like quotes or logical operators) to see how the application responds. Look for ways to alter the query logic.",
+                    tactical_intel: "SQL injection works when user input is concatenated directly into SQL queries without proper escaping. Once you successfully bypass authentication or extract data through malicious SQL, you've proven database compromise.",
+                    tool: "SQLMap / Manual SQL Injection",
+                    flag: "flag{db_dumped}",
+                    unlocked: false,
+                    completed: false
+                },
+                {
+                    code: "OP-006",
+                    title: "Viral Signal",
+                    type: "XSS (Stored)",
+                    briefing: "Now we transform the target into an unwitting weapon. The application accepts user input and stores it directly in the database without sanitization. When users access the contaminated page, their browsers execute our injected code—silently, invisibly, systematically. This is a viral attack. Inject JavaScript into the system that will execute in every user's browser, every time they visit. We're not just compromising data—we're commandeering the application itself. Your malicious script will persist, hidden within the database, waiting to strike.",
+                    hint: "Navigate to <code>http://localhost/vulnerabilities/xss_stored/</code> and find an input field that appears to accept user comments or messages. Try entering HTML or JavaScript tags to see if they're filtered or allowed.",
+                    tactical_intel: "Stored XSS persists in the database and executes whenever the page is loaded. Once you inject code that executes in the browser and remains persistent across page reloads, you've weaponized the application.",
+                    tool: "Browser / Burp Suite",
+                    flag: "flag{xss_persistence}",
+                    unlocked: false,
+                    completed: false
+                },
+                {
+                    code: "OP-007",
+                    title: "The Trojan",
+                    type: "File Upload",
+                    briefing: "Every castle has a gate. The application's file upload mechanism is designed to let users share documents—innocent, trusted functionality. But the developers neglected to validate what's actually being uploaded. No file type checks. No content scanning. No quarantine system. We'll exploit this trust. Upload a Trojan—a specially crafted file containing executable code. Once stored on the server, we activate it. This is infiltration at its finest: placing our agent directly into the enemy's infrastructure, hidden in plain sight.",
+                    hint: "Access <code>http://localhost/vulnerabilities/upload/</code> and locate a file upload form. Try uploading different file types to see what is accepted. Observe where uploaded files are stored and accessible.",
+                    tactical_intel: "If you can upload executable code (like PHP or other server-side scripts) and access it through the web interface, you have remote code execution. The uploaded file becomes your backdoor.",
+                    tool: "Upload Tools / Burp Suite",
+                    flag: "flag{shell_uploaded}",
+                    unlocked: false,
+                    completed: false
+                },
+                {
+                    code: "OP-008",
+                    title: "Ghost in the Machine",
+                    type: "Full Compromise",
+                    briefing: "This is the final phase. You've breached the perimeter. You've extracted intelligence. You've planted your agents throughout the system. Now comes the endgame: total system control. The regular user access we established is merely a foothold—the system administrator holds true power. You must escalate your privileges using every tool in your arsenal. Hunt for misconfigurations that grant unintended elevated access. You must become invisible, untraceable, and omnipotent. Root access is the ultimate victory—the moment when you own the entire infrastructure. No secrets remain hidden. No restrictions apply.",
+                    hint: "Using any access you've gained from previous missions, explore the system for privilege escalation vectors. Look for unusual permissions on files, interesting scripts, or configuration issues that might allow higher privileges.",
+                    tactical_intel: "Privilege escalation exploits system misconfigurations or vulnerabilities to elevate from user to root. Common vectors include SUID binaries, weak sudo rules, world-writable scripts, and unpatched kernel exploits. Once you execute commands as root, complete system compromise is achieved.",
+                    tool: "All Tools / Privilege Escalation",
+                    flag: "flag{root_access_granted}",
+                    unlocked: false,
+                    completed: false
+                }
+            ]
+        };
+
+        // Debug: Verify DOM is ready
+        console.log('✓ Script loaded, checking DOM...');
+        const initBtn = document.getElementById('initBtn');
+        if (!initBtn) {
+            console.error('❌ ERROR: initBtn element not found in DOM!');
+        } else {
+            console.log('✓ initBtn found, attaching listener...');
+        }
+
+        // Initialize button with error handling
+        if (initBtn) {
+            initBtn.addEventListener('click', () => {
+                console.log('🎯 Initialize button clicked!');
+                gameState.gameStarted = true;
+                document.getElementById('splashScreen').classList.add('hidden-display');
+                document.getElementById('dashboard').classList.add('flex-display');
+                renderMissions();
+                loadMission(0);
+                console.log('✓ Dashboard displayed');
+            });
+            console.log('✓ Event listener successfully attached to initBtn');
+        }
+
+        // Tab buttons
+        document.querySelectorAll('.tabBtn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const view = btn.getAttribute('data-view');
+                gameState.view = view;
+                updateTabUI();
+                showView(view);
+            });
+        });
+
+        function updateTabUI() {
+            document.querySelectorAll('.tabBtn').forEach(btn => {
+                btn.classList.remove('bg-green-900/30', 'text-green-400', 'border-green-600', 'bg-blue-900/20', 'text-blue-400', 'border-blue-600', 'bg-red-900/20', 'text-red-400', 'border-red-600');
+                const view = btn.getAttribute('data-view');
+                if (view === gameState.view) {
+                    if (view === 'missions') {
+                        btn.classList.add('bg-green-900/30', 'text-green-400', 'border-green-600');
+                    } else if (view === 'terminal') {
+                        btn.classList.add('bg-blue-900/20', 'text-blue-400', 'border-blue-600');
+                    } else {
+                        btn.classList.add('bg-red-900/20', 'text-red-400', 'border-red-600');
+                    }
+                } else {
+                    btn.classList.add('text-gray-500', 'border-transparent');
+                }
+            });
+        }
+
+        function showView(view) {
+            document.getElementById('view-missions').classList.add('hidden-display');
+            document.getElementById('view-terminal').classList.add('hidden-display');
+            document.getElementById('view-target').classList.add('hidden-display');
+
+            if (view === 'missions') document.getElementById('view-missions').classList.remove('hidden-display');
+            else if (view === 'terminal') document.getElementById('view-terminal').classList.remove('hidden-display');
+            else if (view === 'target') document.getElementById('view-target').classList.remove('hidden-display');
+        }
+
+        function renderMissions() {
+            const list = document.getElementById('missionsList');
+            list.innerHTML = gameState.missions.map((m, idx) => {
+                let statusText = 'LOCKED';
+                let statusColor = 'text-red-500';
+                if (m.completed) {
+                    statusText = '✓ COMPLETED';
+                    statusColor = 'text-green-400';
+                } else if (m.unlocked) {
+                    statusText = '► AVAILABLE';
+                    statusColor = 'text-yellow-400';
+                }
+                return `
+                    <button class="missionBtn w-full text-left p-3 border-b border-gray-800 hover:bg-gray-900 transition-colors ${idx === gameState.currentMissionIdx ? 'bg-gray-900 border-l-2 border-l-green-500' : ''} ${!m.unlocked ? 'opacity-50 cursor-not-allowed' : ''}" data-idx="${idx}">
+                        <div class="text-xs text-green-400 font-bold">${m.code}</div>
+                        <div class="text-sm text-white font-mono">${m.title}</div>
+                        <div class="text-xs ${statusColor} mt-1">${statusText}</div>
+                    </button>
+                `;
+            }).join('');
+
+            document.querySelectorAll('.missionBtn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const idx = parseInt(btn.getAttribute('data-idx'));
+                    loadMission(idx);
+                });
+            });
+        }
+
+        function loadMission(idx) {
+            // Prevent loading locked missions
+            const m = gameState.missions[idx];
+            if (!m.unlocked) {
+                alert('This mission is locked. Complete the previous mission first.');
+                return;
+            }
+
+            gameState.currentMissionIdx = idx;
+            document.getElementById('missionTitle').textContent = m.title;
+            document.getElementById('missionType').textContent = m.type;
+            document.getElementById('missionBriefing').innerHTML = m.briefing;
+            document.getElementById('missionHint').innerHTML = m.hint;
+            document.getElementById('flagInput').value = '';
+            document.getElementById('flagMessage').textContent = '';
+
+            // Show tactical intel only if mission is completed
+            const intelLocked = document.getElementById('intelLocked');
+            const intelUnlocked = document.getElementById('intelUnlocked');
+            if (m.completed) {
+                intelLocked.classList.add('hidden-display');
+                intelUnlocked.classList.remove('hidden-display');
+                document.getElementById('tacticalIntel').innerHTML = m.tactical_intel;
+            } else {
+                intelLocked.classList.remove('hidden-display');
+                intelUnlocked.classList.add('hidden-display');
+            }
+
+            renderMissions();
+        }
+
+        // Flag submission handlers
+        const submitFlagBtn = document.getElementById('submitFlagBtn');
+        const flagInput = document.getElementById('flagInput');
+
+        if (submitFlagBtn) {
+            submitFlagBtn.addEventListener('click', submitFlag);
+            console.log('✓ Submit flag button listener attached');
+        }
+        if (flagInput) {
+            flagInput.addEventListener('keyup', (e) => {
+                if (e.key === 'Enter') submitFlag();
+            });
+            console.log('✓ Flag input key listener attached');
+        }
+
+        function submitFlag() {
+            const m = gameState.missions[gameState.currentMissionIdx];
+            const input = document.getElementById('flagInput').value.trim();
+            const msgEl = document.getElementById('flagMessage');
+
+            if (input === m.flag) {
+                msgEl.textContent = '✓ Flag accepted! Mission complete.';
+                msgEl.style.color = '#00ff41';
+                m.completed = true;
+                gameState.xp += 500;
+                updateRank();
+
+                // Unlock the next mission
+                if (gameState.currentMissionIdx < gameState.missions.length - 1) {
+                    gameState.missions[gameState.currentMissionIdx + 1].unlocked = true;
+                }
+
+                setTimeout(() => loadMission(gameState.currentMissionIdx), 500);
+            } else {
+                msgEl.textContent = '✗ Incorrect flag';
+                msgEl.style.color = '#ff3333';
+            }
+        }
+
+        function updateRank() {
+            document.getElementById('xpDisplay').textContent = gameState.xp;
+            if (gameState.xp >= 4000) gameState.rank = "STATE ACTOR";
+            else if (gameState.xp >= 3000) gameState.rank = "BLACK HAT";
+            else if (gameState.xp >= 2000) gameState.rank = "GREY HAT";
+            else if (gameState.xp >= 1000) gameState.rank = "SCRIPT KIDDIE";
+            document.getElementById('rankDisplay').textContent = gameState.rank;
+        }
+
+        // Terminal launch button
+        const launchTerminalBtn = document.getElementById('launchTerminalBtn');
+        if (launchTerminalBtn) {
+            launchTerminalBtn.addEventListener('click', () => {
+                window.open('http://localhost:8081', 'kali_terminal', 'width=1200,height=800');
+            });
+            console.log('✓ Terminal button listener attached');
+        }
+
+        // Unlock intel button
+        const unlockIntelBtn = document.getElementById('unlockIntelBtn');
+        if (unlockIntelBtn) {
+            unlockIntelBtn.addEventListener('click', () => {
+                alert('Submit the correct flag first to unlock intel!');
+            });
+            console.log('✓ Unlock intel button listener attached');
+        }
+
+        // Initial setup
+        showView('missions');
+        updateTabUI();
+    </script>
+</body>
+</html>

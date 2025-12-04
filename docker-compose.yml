@@ -1,0 +1,40 @@
+services:
+  # 1. The Target Machine (DVWA)
+  dvwa:
+    image: vulnerables/web-dvwa
+    container_name: ghost_target
+    ports:
+      - "80:80"
+    environment:
+      # CRITICAL: This allows the dashboard to display the target in the iframe
+      - PHP_X_FRAME_OPTIONS=allow
+    networks:
+      - cyber-range
+
+  # 2. The Attack Machine (Kali + Shellinabox)
+  kali:
+    build: .
+    container_name: ghost_terminal
+    ports:
+      - "8081:4200"
+    networks:
+      - cyber-range
+    tty: true
+
+  # 3. The Dashboard Server (Ghost Protocol interface)
+  dashboard:
+    image: python:3.11-slim
+    container_name: ghost_dashboard
+    ports:
+      - "8082:8000"
+    volumes:
+      - ./ghost_protocol.html:/app/ghost_protocol.html
+      - ./server.py:/app/server.py
+    working_dir: /app
+    command: bash -c "pip install flask --quiet && python server.py"
+    networks:
+      - cyber-range
+
+networks:
+  cyber-range:
+    driver: bridge
