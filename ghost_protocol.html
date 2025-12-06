@@ -351,7 +351,7 @@
                     title: "The Trojan",
                     type: "File Upload",
                     briefing: "Every castle has a gate. The application's file upload mechanism is designed to let users share documents—innocent, trusted functionality. But the developers neglected to validate what's actually being uploaded. No file type checks. No content scanning. No quarantine system. We'll exploit this trust. Upload a Trojan—a specially crafted file containing executable code. Once stored on the server, we activate it. This is infiltration at its finest: placing our agent directly into the enemy's infrastructure, hidden in plain sight.",
-                    hint: "Access <code>http://localhost/vulnerabilities/upload/</code> and upload a server-side file (e.g., a tiny PHP web shell). Uploaded files are served from <code>/hackable/uploads/</code>. After upload, browse to your file and append <code>?cmd=whoami</code> to prove code execution.",
+                    hint: "Access <code>http://localhost/vulnerabilities/upload/</code> and upload a server-side file (e.g., the provided <code>OP-007_shell_upload/shell.php</code>). Uploaded files are served from <code>/hackable/uploads/</code>. After upload, browse to your file and append <code>?cmd=whoami</code> to prove code execution.",
                     tactical_intel: "A successful exploit means you can execute commands via your uploaded file. Proof options: submit the URL to your shell (<code>flag{http://localhost/hackable/uploads/yourfile.php}</code>) or the command output you get (e.g., <code>flag{www-data}</code>). Legacy <code>flag{shell_uploaded}</code> still works.",
                     tool: "Upload Tools / Burp Suite",
                     flag: null,
