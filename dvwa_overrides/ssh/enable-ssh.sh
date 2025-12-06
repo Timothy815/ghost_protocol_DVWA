@@ -49,8 +49,10 @@ fi
 echo 'ghostuser:ghostuser' | chpasswd
 echo 'root:root' | chpasswd
 
-# Generate host keys if missing
-ssh-keygen -A
+# Generate host keys if missing (mounted keys should already exist)
+if [ ! -f /etc/ssh/ssh_host_rsa_key ]; then
+    ssh-keygen -A
+fi
 
 # Always ensure sshd is running
 if command -v service >/dev/null 2>&1; then

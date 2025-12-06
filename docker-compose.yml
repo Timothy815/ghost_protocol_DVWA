@@ -16,6 +16,12 @@ services:
       - ./dvwa_overrides/priv_esc/ghost-cleanup.sh:/usr/local/bin/ghost-cleanup.sh
       - ./dvwa_overrides/mysql/allow-remote.sql:/docker-entrypoint-initdb.d/allow-remote.sql
       - ./dvwa_overrides/ssh/enable-ssh.sh:/usr/local/bin/enable-ssh.sh
+      - ./dvwa_overrides/ssh/host_keys/ssh_host_rsa_key:/etc/ssh/ssh_host_rsa_key
+      - ./dvwa_overrides/ssh/host_keys/ssh_host_rsa_key.pub:/etc/ssh/ssh_host_rsa_key.pub
+      - ./dvwa_overrides/ssh/host_keys/ssh_host_ed25519_key:/etc/ssh/ssh_host_ed25519_key
+      - ./dvwa_overrides/ssh/host_keys/ssh_host_ed25519_key.pub:/etc/ssh/ssh_host_ed25519_key.pub
+      - ./dvwa_overrides/ssh/host_keys/ssh_host_ecdsa_key:/etc/ssh/ssh_host_ecdsa_key
+      - ./dvwa_overrides/ssh/host_keys/ssh_host_ecdsa_key.pub:/etc/ssh/ssh_host_ecdsa_key.pub
     command: bash -c "/usr/local/bin/enable-ssh.sh; /main.sh"
     networks:
       - cyber-range
