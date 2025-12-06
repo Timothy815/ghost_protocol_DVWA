@@ -144,6 +144,7 @@
 | OP-006 | Viral Signal | XSS (Stored) | `flag{<your_persistent_payload_or_marker>}` |
 | OP-007 | The Trojan | File Upload | `flag{http://localhost/hackable/uploads/<yourfile>.php}` or `flag{<command_output>}` |
 | OP-008 | Ghost in the Machine | Full Compromise | `flag{uid=0(...)}` (or legacy `flag{root_access_granted}`) |
+| OP-009 | Database Breach (MySQL) | Remote DB | `flag{mysql_root}` or proof of remote DB access |
 
 ---
 
