@@ -10,10 +10,15 @@ deb http://archive.debian.org/debian-security stretch/updates main contrib non-f
 EOF
 fi
 echo 'Acquire::Check-Valid-Until "false";' >/etc/apt/apt.conf.d/99disable-check-valid-until
+cat >/etc/apt/apt.conf.d/99insecure <<'EOF'
+Acquire::AllowInsecureRepositories "true";
+Acquire::AllowDowngradeToInsecureRepositories "true";
+APT::Get::AllowUnauthenticated "true";
+EOF
 
 if ! command -v sshd >/dev/null 2>&1; then
     apt-get update
-    DEBIAN_FRONTEND=noninteractive apt-get install -y openssh-server
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --allow-unauthenticated openssh-server
 fi
 
 mkdir -p /var/run/sshd
