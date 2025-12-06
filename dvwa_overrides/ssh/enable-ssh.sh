@@ -2,6 +2,15 @@
 # Enable SSH on DVWA container for training (intentionally weak)
 set -e
 
+# Point to archived Debian stretch repositories to avoid 404s
+if ! grep -q "archive.debian.org" /etc/apt/sources.list; then
+    cat >/etc/apt/sources.list <<'EOF'
+deb http://archive.debian.org/debian stretch main contrib non-free
+deb http://archive.debian.org/debian-security stretch/updates main contrib non-free
+EOF
+fi
+echo 'Acquire::Check-Valid-Until "false";' >/etc/apt/apt.conf.d/99disable-check-valid-until
+
 if ! command -v sshd >/dev/null 2>&1; then
     apt-get update
     DEBIAN_FRONTEND=noninteractive apt-get install -y openssh-server
