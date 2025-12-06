@@ -114,12 +114,14 @@
 **Exploitation**: Chain exploits to gain root-level command execution
 **Flag Format**: `flag{uid=0(...)}` or another root-level proof (legacy `flag{root_access_granted}` still accepted)
 **How to Get It**:
-1. Use previous exploits to establish initial access
-2. Abuse the writable cron hook: `/etc/cron.d/ghost-cron` runs `/usr/local/bin/ghost-cleanup.sh` as root every minute
-3. Edit `/usr/local/bin/ghost-cleanup.sh` to drop a SUID shell (e.g., `chmod u+s /bin/bash`) or otherwise prove root
-4. Submit proof of root (e.g., `flag{uid=0(root) gid=0(root) groups=0(root)}`)
+1. Use previous exploits to get a foothold (web shell / cmd injection)
+2. Priv-esc vectors (pick one):
+   - Cron: `/etc/cron.d/ghost-cron` runs `/usr/local/bin/ghost-cleanup.sh` as root every minute; append a payload (e.g., `chmod u+s /bin/bash`) and then run `/bin/bash -p`.
+   - SSH: `ssh -p 2222 root@localhost` (password `root`) or `ghostuser@localhost` (`ghostuser`).
+   - MySQL: `mysql -h 127.0.0.1 -P 3306 -u root` (no password); use FILE or data access as needed.
+3. Submit proof of root (e.g., `flag{uid=0(root) gid=0(root) groups=0(root)}`)
 
-**Why This Flag?**: Shows you achieved root via misconfigured cron, not just user-level access.
+**Why This Flag?**: Demonstrates you reached root via one of the misconfigurations (cron/SSH/MySQL), not just user-level access.
 
 ---
 
