@@ -6,7 +6,7 @@ services:
     ports:
       - "80:80"
       - "3306:3306"
-      - "2222:22"
+      - "2223:22"
     environment:
       # CRITICAL: This allows the dashboard to display the target in the iframe
       - PHP_X_FRAME_OPTIONS=allow
