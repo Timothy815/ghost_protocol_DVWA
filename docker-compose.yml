@@ -30,6 +30,20 @@ services:
       - cyber-range
     tty: true
 
+  wetty:
+    image: wettyoss/wetty
+    container_name: ghost_wetty
+    environment:
+      - SSHHOST=ghost_target
+      - SSHPORT=22
+      - SSHUSER=root
+      - SSHPASS=root
+      - PORT=3000
+    ports:
+      - "3000:3000"
+    networks:
+      - cyber-range
+
   # 3. The Dashboard Server (Ghost Protocol interface)
   dashboard:
     image: python:3.11-slim

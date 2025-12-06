@@ -150,17 +150,18 @@
             <div id="view-terminal" class="hidden-display h-full bg-black flex flex-col items-center justify-center">
                 <div class="bg-[#101010] p-2 flex justify-between items-center border-b border-gray-800 w-full">
                     <span class="text-xs text-gray-500 font-mono">CONNECTION: <span class="text-green-500">ESTABLISHED (PORT 8081)</span></span>
-                    <span class="text-xs text-blue-500 font-mono">ROOT@KALI</span>
+                    <span class="text-xs text-blue-500 font-mono">ROOT@WETTY</span>
                 </div>
                 <div class="flex flex-col items-center justify-center flex-1 gap-4 px-4 text-center">
                     <h2 class="text-2xl text-green-500 font-mono">TERMINAL ACCESS</h2>
                     <p class="text-gray-400 text-sm max-w-md">
-                        The web-based terminal opens in a new tab for optimal compatibility and input responsiveness.
+                        The web-based terminal (Wetty) opens in a new tab for optimal compatibility and input responsiveness.
                     </p>
                     <button id="launchTerminalBtn" class="px-6 py-3 bg-green-900 hover:bg-green-800 text-green-400 border border-green-600 font-mono text-sm transition-colors">
-                        ▶ LAUNCH TERMINAL (NEW TAB)
+                        ▶ LAUNCH TERMINAL (WETTY, NEW TAB)
                     </button>
-                    <p class="text-xs text-gray-600 mt-4">Press ENTER to skip login (passwordless root)</p>
+                    <p class="text-xs text-gray-600 mt-4">Auto-login to target over SSH (root/root)</p>
+                    <p class="text-xs text-gray-500">Prefer local SSH for best experience: <code>ssh -p 2222 root@localhost</code></p>
                 </div>
             </div>
 
