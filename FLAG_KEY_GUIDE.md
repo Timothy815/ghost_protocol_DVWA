@@ -96,15 +96,15 @@
 
 **Vulnerability**: Unrestricted file upload allows executing malicious code
 **Exploitation**: Upload a PHP shell or reverse shell script
-**Flag Format**: `flag{shell_uploaded}`
+**Flag Format**: `flag{http://localhost/hackable/uploads/<yourfile>.php}` or `flag{<command_output>}` (e.g., `flag{www-data}`); legacy `flag{shell_uploaded}` still accepted.
 **How to Get It**:
 1. Access the file upload page
 2. Create a simple PHP file: `<?php system($_GET['cmd']); ?>`
-3. Upload the file
-4. Access the uploaded file and execute commands
-5. Submit: `flag{shell_uploaded}`
+3. Upload the file (served from `/hackable/uploads/`)
+4. Access the uploaded file and execute commands, e.g., `?cmd=whoami`
+5. Submit the shell URL or the command output wrapped as `flag{...}`
 
-**Why This Flag?**: Successfully uploading and executing a shell means you have code execution on the server.
+**Why This Flag?**: Proves you achieved RCE via uploaded shell, not just storing a file.
 
 ---
 
@@ -142,7 +142,7 @@
 | OP-004 | The Archive | LFI | `root:x:0:0` |
 | OP-005 | The Heist | SQL Injection | `flag{<admin_password_hash>}` |
 | OP-006 | Viral Signal | XSS (Stored) | `flag{<your_persistent_payload_or_marker>}` |
-| OP-007 | The Trojan | File Upload | `flag{shell_uploaded}` |
+| OP-007 | The Trojan | File Upload | `flag{http://localhost/hackable/uploads/<yourfile>.php}` or `flag{<command_output>}` |
 | OP-008 | Ghost in the Machine | Full Compromise | `flag{root_access_granted}` |
 
 ---

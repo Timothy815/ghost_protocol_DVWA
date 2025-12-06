@@ -240,6 +240,25 @@
             return markers.some(m => inner.includes(m));
         }
 
+        function validateUploadFlag(inputRaw) {
+            const normalized = inputRaw.trim();
+            const lower = normalized.toLowerCase();
+
+            // Backward compatibility
+            if (lower === 'flag{shell_uploaded}') return true;
+
+            // Accept URLs to uploaded shells in hackable/uploads
+            if (lower.startsWith('flag{http://') && lower.includes('/hackable/uploads/')) return true;
+
+            // Accept command output proofs (e.g., whoami output)
+            if (lower.startsWith('flag{') && lower.endsWith('}')) {
+                const inner = lower.slice(5, -1);
+                if (inner.includes('www-data') || inner.includes('apache') || inner.includes('uid=')) return true;
+            }
+
+            return false;
+        }
+
         // Game State
         const gameState = {
             gameStarted: false,
@@ -332,10 +351,11 @@
                     title: "The Trojan",
                     type: "File Upload",
                     briefing: "Every castle has a gate. The application's file upload mechanism is designed to let users share documents—innocent, trusted functionality. But the developers neglected to validate what's actually being uploaded. No file type checks. No content scanning. No quarantine system. We'll exploit this trust. Upload a Trojan—a specially crafted file containing executable code. Once stored on the server, we activate it. This is infiltration at its finest: placing our agent directly into the enemy's infrastructure, hidden in plain sight.",
-                    hint: "Access <code>http://localhost/vulnerabilities/upload/</code> and locate a file upload form. Try uploading different file types to see what is accepted. Observe where uploaded files are stored and accessible.",
-                    tactical_intel: "If you can upload executable code (like PHP or other server-side scripts) and access it through the web interface, you have remote code execution. The uploaded file becomes your backdoor.",
+                    hint: "Access <code>http://localhost/vulnerabilities/upload/</code> and upload a server-side file (e.g., a tiny PHP web shell). Uploaded files are served from <code>/hackable/uploads/</code>. After upload, browse to your file and append <code>?cmd=whoami</code> to prove code execution.",
+                    tactical_intel: "A successful exploit means you can execute commands via your uploaded file. Proof options: submit the URL to your shell (<code>flag{http://localhost/hackable/uploads/yourfile.php}</code>) or the command output you get (e.g., <code>flag{www-data}</code>). Legacy <code>flag{shell_uploaded}</code> still works.",
                     tool: "Upload Tools / Burp Suite",
-                    flag: "flag{shell_uploaded}",
+                    flag: null,
+                    flagCheck: validateUploadFlag,
                     unlocked: false,
                     completed: false
                 },
