@@ -266,7 +266,7 @@
                     title: "The Archive",
                     type: "File Inclusion (LFI)",
                     briefing: "Every system has an archive—a repository of system secrets. The application implements a file inclusion feature, ostensibly to serve documents from a controlled directory. But the developers failed to restrict path traversal. By manipulating file paths, you can navigate outside the intended directory and access the entire filesystem. Your target is the system's user database, stored in plain text at the root level. Prove you can read arbitrary system files and extract sensitive system information.",
-                    hint: "Access <code>http://localhost/vulnerabilities/fi/</code> and locate a parameter that appears to load files. Try using path traversal sequences like <code>../</code> to navigate up from the intended directory.",
+                    hint: "Access <code>http://localhost/vulnerabilities/fi/</code> and locate a parameter that appears to load files. Try path traversal like <code>../</code> to break out of the intended directory. Flag is the first user entry in <code>/etc/passwd</code>.",
                     tactical_intel: "The Linux system password file contains all user accounts and privilege levels. Once you discover the superuser entry through path traversal, you've proven local file disclosure.",
                     tool: "Browser / curl",
                     flag: "root:x:0:0",
