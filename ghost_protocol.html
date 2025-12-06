@@ -224,6 +224,22 @@
             return Boolean(match);
         }
 
+        function validateXssFlag(inputRaw) {
+            const normalized = inputRaw.trim();
+            const lower = normalized.toLowerCase();
+
+            // Backward compatibility for the old static flag
+            if (lower === 'flag{xss_persistence}') return true;
+
+            // Require flag{...}
+            if (!lower.startsWith('flag{') || !lower.endsWith('}')) return false;
+            const inner = lower.slice(5, -1);
+
+            // Look for common stored XSS payload markers
+            const markers = ['<script', 'onerror', 'onload', 'svg', 'img', 'alert', 'fetch'];
+            return markers.some(m => inner.includes(m));
+        }
+
         // Game State
         const gameState = {
             gameStarted: false,
@@ -303,10 +319,11 @@
                     title: "Viral Signal",
                     type: "XSS (Stored)",
                     briefing: "Now we transform the target into an unwitting weapon. The application accepts user input and stores it directly in the database without sanitization. When users access the contaminated page, their browsers execute our injected code—silently, invisibly, systematically. This is a viral attack. Inject JavaScript into the system that will execute in every user's browser, every time they visit. We're not just compromising data—we're commandeering the application itself. Your malicious script will persist, hidden within the database, waiting to strike.",
-                    hint: "Navigate to <code>http://localhost/vulnerabilities/xss_stored/</code> and find an input field that appears to accept user comments or messages. Try entering HTML or JavaScript tags to see if they're filtered or allowed.",
-                    tactical_intel: "Stored XSS persists in the database and executes whenever the page is loaded. Once you inject code that executes in the browser and remains persistent across page reloads, you've weaponized the application.",
+                    hint: "Navigate to <code>http://localhost/vulnerabilities/xss_stored/</code> and post a payload that will execute on reload (e.g., <code>&lt;script&gt;alert('XSS')&lt;/script&gt;</code> or <code>&lt;img src=x onerror=alert(1)&gt;</code>). Your flag is your stored payload or marker wrapped as <code>flag{...}</code>.",
+                    tactical_intel: "Stored XSS persists in the DB and fires for every visitor. Use any JS-executing payload (script tag, onerror, onload, SVG). Prove it by submitting your payload marker as <code>flag{&lt;your_payload_or_marker&gt;}</code>; the app accepts common XSS patterns or the legacy <code>flag{xss_persistence}</code>.",
                     tool: "Browser / Burp Suite",
-                    flag: "flag{xss_persistence}",
+                    flag: null,
+                    flagCheck: validateXssFlag,
                     unlocked: false,
                     completed: false
                 },

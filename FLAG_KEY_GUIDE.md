@@ -81,15 +81,14 @@
 
 **Vulnerability**: Unsanitized input stored in database and reflected to other users
 **Exploitation**: Inject JavaScript that persists and executes for all users
-**Flag Format**: `flag{xss_persistence}`
+**Flag Format**: `flag{<your_persistent_payload_or_marker>}` (e.g., `flag{<script>alert(1)</script>}` or `flag{<img src=x onerror=alert(1)>}`)
 **How to Get It**:
 1. Access the XSS (Stored) page
-2. Inject payload: `<script>alert('XSS')</script>` or similar
-3. Submit the form to store it
-4. Refresh or visit as another user - the script executes
-5. Submit: `flag{xss_persistence}`
+2. Inject a payload that executes on reload (script tag, onerror, onload, etc.)
+3. Submit the form to store it; refresh to see it fire
+4. Wrap your payload/marker in `flag{...}` and submit (legacy `flag{xss_persistence}` still accepted)
 
-**Why This Flag?**: Stored XSS that persists across users is the most dangerous XSS variant.
+**Why This Flag?**: Your own persistent payload proves you achieved stored XSS, not just a canned answer.
 
 ---
 
@@ -142,7 +141,7 @@
 | OP-003 | The Imposter | CSRF | `flag{csrf_<token>}` |
 | OP-004 | The Archive | LFI | `root:x:0:0` |
 | OP-005 | The Heist | SQL Injection | `flag{<admin_password_hash>}` |
-| OP-006 | Viral Signal | XSS (Stored) | `flag{xss_persistence}` |
+| OP-006 | Viral Signal | XSS (Stored) | `flag{<your_persistent_payload_or_marker>}` |
 | OP-007 | The Trojan | File Upload | `flag{shell_uploaded}` |
 | OP-008 | Ghost in the Machine | Full Compromise | `flag{root_access_granted}` |
 
