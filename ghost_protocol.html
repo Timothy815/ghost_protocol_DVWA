@@ -176,6 +176,42 @@
     </div>
 
     <script>
+        // Mission-specific validation helpers
+        function validatePipelineFlag(inputRaw) {
+            const normalized = inputRaw.trim();
+            const lower = normalized.toLowerCase();
+
+            // Backward compatibility for the old static flag so existing progress isn't blocked
+            if (lower === 'flag{pipeline_master}') return true;
+
+            // Must follow flag{...} format
+            if (!lower.startsWith('flag{') || !lower.endsWith('}')) return false;
+            const inner = lower.slice(5, -1).trim();
+
+            // Accept evidence of command execution: payloads with whoami/id or outputs like www-data / uid=
+            const commandIndicators = ['whoami', 'id', ';', '|', '&&'];
+            const outputIndicators = ['www-data', 'apache', 'nobody', 'root'];
+
+            if (commandIndicators.some(token => inner.includes(token))) return true;
+            if (outputIndicators.some(token => inner.includes(token))) return true;
+            if (inner.startsWith('uid=')) return true;
+
+            return false;
+        }
+
+        function validateCsrfFlag(inputRaw) {
+            const normalized = inputRaw.trim();
+            const lower = normalized.toLowerCase();
+
+            // Backward compatibility for the old static flag
+            if (lower === 'flag{csrf_success}') return true;
+
+            // Must follow flag{csrf_<token>} format
+            const match = lower.match(/^flag\{csrf_([0-9a-f]{6,16})\}$/);
+            if (!match) return false;
+            return true;
+        }
+
         // Game State
         const gameState = {
             gameStarted: false,
@@ -204,10 +240,11 @@
                     title: "The Pipeline",
                     type: "Command Injection",
                     briefing: "You're now inside the network. Our analysts discovered a diagnostic utility exposed on the internal network—an innocent-looking ping tool that the admins use for network troubleshooting. But like many legacy systems, it was built without proper input validation. The developers trusted user input implicitly, creating a direct pipeline to the underlying operating system. Your objective: weaponize this trust by injecting shell commands and proving you can execute arbitrary code on the server. This demonstrates shell access—the gateway to complete system control.",
-                    hint: "Access <code>http://localhost/vulnerabilities/exec/</code> and locate an input field that appears to execute ping commands. Experiment with special shell characters like <code>;</code>, <code>|</code>, or <code>&</code> to break out of the intended command and execute your own.",
-                    tactical_intel: "When you successfully execute a command that wasn't part of the original ping utility (like <code>whoami</code> or <code>id</code>), you've proven command injection. Construct the proper payload and submit the corresponding flag.",
+                    hint: "Access <code>http://localhost/vulnerabilities/exec/</code> and locate an input field that appears to execute ping commands. Experiment with special shell characters like <code>;</code>, <code>|</code>, or <code>&</code> to break out of the intended command and execute your own. Your flag comes from the proof of execution you see in the output, not a pre-published string.",
+                    tactical_intel: "Run a command that isn't part of the ping utility (like <code>whoami</code>, <code>id</code>, or similar). Copy the evidence you see in the response (e.g., <code>www-data</code> or <code>uid=33(www-data)</code>) and wrap it as <code>flag{...}</code>. Payloads themselves (like <code>127.0.0.1; whoami</code>) wrapped in <code>flag{...}</code> also count.",
                     tool: "Browser / Curl",
-                    flag: "flag{pipeline_master}",
+                    flag: null,
+                    flagCheck: validatePipelineFlag,
                     unlocked: false,
                     completed: false
                 },
@@ -216,10 +253,11 @@
                     title: "The Imposter",
                     type: "CSRF",
                     briefing: "The system's authentication may be strong, but its authorization is blind. We've identified a critical vulnerability: the application makes state-changing decisions based solely on HTTP requests, without verifying that the request genuinely originated from an authenticated user. This is your gateway to psychological infiltration. Craft a forged request that the system will execute on behalf of an admin user, without their knowledge or consent. The application lacks cross-site request forgery token protection—it cannot distinguish between a legitimate user action and your malicious forgery.",
-                    hint: "Navigate to <code>http://localhost/vulnerabilities/csrf/</code> and locate forms that perform actions (like changing user data). Examine the HTML source to see if CSRF tokens are present. Try crafting a forged request to modify something without the user's direct action.",
-                    tactical_intel: "CSRF vulnerabilities exist when an application trusts authenticated session cookies without validating a unique token. Once you successfully trigger an unauthorized action through forged requests, you've proven the vulnerability.",
+                    hint: "Navigate to <code>http://localhost/vulnerabilities/csrf/</code>. While logged in, fire a crafted GET like <code>?password_new=hacked&amp;password_conf=hacked&amp;Change=Change</code>. The response will show a <code>FLAG: ...</code> line—copy that value (it's dynamic).",
+                    tactical_intel: "No CSRF token means any site can trigger the password change. Your proof is in the response: the app now emits a one-time <code>flag{csrf_XXXXXXXX}</code> token when the change succeeds. Trigger it via your forged request and submit that exact flag.",
                     tool: "Browser Developer Tools / Burp",
-                    flag: "flag{csrf_success}",
+                    flag: null,
+                    flagCheck: validateCsrfFlag,
                     unlocked: false,
                     completed: false
                 },
@@ -427,7 +465,11 @@
             const input = document.getElementById('flagInput').value.trim();
             const msgEl = document.getElementById('flagMessage');
 
-            if (input === m.flag) {
+            const isCorrect = typeof m.flagCheck === 'function'
+                ? m.flagCheck(input)
+                : input === m.flag;
+
+            if (isCorrect) {
                 msgEl.textContent = '✓ Flag accepted! Mission complete.';
                 msgEl.style.color = '#00ff41';
                 m.completed = true;

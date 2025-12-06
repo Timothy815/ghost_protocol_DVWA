@@ -22,12 +22,12 @@
 
 **Vulnerability**: Unsanitized command execution
 **Exploitation**: Inject shell commands into the parameter field
-**Flag Format**: `flag{pipeline_master}`
+**Flag Format**: `flag{<your_proof_of_execution>}` — e.g., `flag{127.0.0.1; whoami}` or `flag{www-data}`
 **How to Get It**:
 1. Access the command injection page
 2. In the input field, inject a command: `127.0.0.1; whoami`
-3. Execute the injection to prove RCE
-4. Submit: `flag{pipeline_master}`
+3. Execute the injection to prove RCE (check the output)
+4. Wrap your payload or output in `flag{...}` and submit
 
 **Why This Flag?**: Proving you can execute arbitrary commands on the server makes you a "pipeline master."
 
@@ -37,12 +37,11 @@
 
 **Vulnerability**: Missing CSRF token validation
 **Exploitation**: Craft a forged request that the authenticated user unknowingly submits
-**Flag Format**: `flag{csrf_success}`
+**Flag Format**: `flag{csrf_<token>}` shown in the response after a successful CSRF password change
 **How to Get It**:
 1. Analyze the CSRF page to understand what requests it makes
-2. Create an HTML page with a hidden form that performs a CSRF attack
-3. Get an authenticated user to visit your page
-4. Submit: `flag{csrf_success}`
+2. While authenticated as admin, trigger a forged GET: `?password_new=...&password_conf=...&Change=Change`
+3. The page now returns a line like `FLAG: flag{csrf_deadbeef}` — copy that and submit it
 
 **Why This Flag?**: Successfully exploiting CSRF proves you've made an unauthorized request on behalf of the user.
 
@@ -139,8 +138,8 @@
 | Op Code | Mission | Vulnerability | Flag |
 |---------|---------|---|---|
 | OP-001 | The Gatekeeper | Brute Force | `password` |
-| OP-002 | The Pipeline | Command Injection | `flag{pipeline_master}` |
-| OP-003 | The Imposter | CSRF | `flag{csrf_success}` |
+| OP-002 | The Pipeline | Command Injection | `flag{<your_proof_of_execution>}` |
+| OP-003 | The Imposter | CSRF | `flag{csrf_<token>}` |
 | OP-004 | The Archive | LFI | `root:x:0:0` |
 | OP-005 | The Heist | SQL Injection | `flag{db_dumped}` |
 | OP-006 | Viral Signal | XSS (Stored) | `flag{xss_persistence}` |

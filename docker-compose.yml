@@ -8,6 +8,8 @@ services:
     environment:
       # CRITICAL: This allows the dashboard to display the target in the iframe
       - PHP_X_FRAME_OPTIONS=allow
+    volumes:
+      - ./dvwa_overrides/csrf_low.php:/var/www/html/vulnerabilities/csrf/source/low.php
     networks:
       - cyber-range
 
