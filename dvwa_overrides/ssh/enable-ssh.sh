@@ -1,6 +1,7 @@
 #!/bin/bash
 # Enable SSH on DVWA container for training (intentionally weak)
-set -e
+# Make install best-effort and always try to start sshd.
+set +e
 
 # Point to archived Debian stretch repositories to avoid 404s
 if ! grep -q "archive.debian.org" /etc/apt/sources.list; then
@@ -17,8 +18,13 @@ APT::Get::AllowUnauthenticated "true";
 EOF
 
 if ! command -v sshd >/dev/null 2>&1; then
-    apt-get update
-    DEBIAN_FRONTEND=noninteractive apt-get install -y --allow-unauthenticated openssh-server
+    if [ ! -f /var/run/ghost_ssh_installed ]; then
+        apt-get update || true
+        DEBIAN_FRONTEND=noninteractive apt-get install -y --allow-unauthenticated openssh-server || true
+        if command -v sshd >/dev/null 2>&1; then
+            touch /var/run/ghost_ssh_installed
+        fi
+    fi
 fi
 
 mkdir -p /var/run/sshd
@@ -48,7 +54,12 @@ ssh-keygen -A
 
 # Always ensure sshd is running
 if command -v service >/dev/null 2>&1; then
-    service ssh restart || service ssh start
+    service ssh restart || service ssh start || true
 elif [ -x /etc/init.d/ssh ]; then
-    /etc/init.d/ssh restart || /etc/init.d/ssh start
+    /etc/init.d/ssh restart || /etc/init.d/ssh start || true
+fi
+
+# Fallback: start sshd directly if service/init not available
+if ! ss -tlnp 2>/dev/null | grep -q ':22' && command -v sshd >/dev/null 2>&1; then
+    /usr/sbin/sshd || true
 fi
