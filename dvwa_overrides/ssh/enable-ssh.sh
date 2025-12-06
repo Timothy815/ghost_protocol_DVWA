@@ -49,7 +49,7 @@ fi
 echo 'ghostuser:ghostuser' | chpasswd
 echo 'root:root' | chpasswd
 
-# Generate host keys if missing (mounted keys should already exist)
+# Generate host keys if missing (persisted via Docker volume)
 if [ ! -f /etc/ssh/ssh_host_rsa_key ]; then
     ssh-keygen -A
 fi
