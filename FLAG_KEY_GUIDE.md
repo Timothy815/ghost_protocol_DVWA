@@ -66,14 +66,14 @@
 
 **Vulnerability**: Unsanitized SQL query construction
 **Exploitation**: Inject SQL code to extract database contents
-**Flag Format**: `flag{db_dumped}`
+**Flag Format**: `flag{<admin_password_hash>}` (the actual 32-hex MD5 you dump for admin)
 **How to Get It**:
 1. Access the SQL injection page
-2. Inject SQL: `admin'#` or `' OR '1'='1`
-3. Extract user credentials or data from the database
-4. Submit: `flag{db_dumped}`
+2. Use UNION or SQLMap to dump the `users` table (e.g., `1' UNION SELECT user, password FROM users -- -`)
+3. Identify the admin row and copy its password hash (whatever it currently is)
+4. Submit it as `flag{<the_hash>}`
 
-**Why This Flag?**: Successfully dumping database contents is the ultimate SQL injection goal.
+**Why This Flag?**: The live hash proves you truly extracted data from the database, not a canned answer.
 
 ---
 
@@ -141,7 +141,7 @@
 | OP-002 | The Pipeline | Command Injection | `flag{<your_proof_of_execution>}` |
 | OP-003 | The Imposter | CSRF | `flag{csrf_<token>}` |
 | OP-004 | The Archive | LFI | `root:x:0:0` |
-| OP-005 | The Heist | SQL Injection | `flag{db_dumped}` |
+| OP-005 | The Heist | SQL Injection | `flag{<admin_password_hash>}` |
 | OP-006 | Viral Signal | XSS (Stored) | `flag{xss_persistence}` |
 | OP-007 | The Trojan | File Upload | `flag{shell_uploaded}` |
 | OP-008 | Ghost in the Machine | Full Compromise | `flag{root_access_granted}` |

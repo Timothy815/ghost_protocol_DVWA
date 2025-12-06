@@ -212,6 +212,18 @@
             return true;
         }
 
+        function validateSqliFlag(inputRaw) {
+            const normalized = inputRaw.trim();
+            const lower = normalized.toLowerCase();
+
+            // Backward compatibility for the old static flag
+            if (lower === 'flag{db_dumped}') return true;
+
+            // Expect an MD5 hex hash for admin password: 32 hex chars
+            const match = lower.match(/^flag\{[0-9a-f]{32}\}$/);
+            return Boolean(match);
+        }
+
         // Game State
         const gameState = {
             gameStarted: false,
@@ -278,10 +290,11 @@
                     title: "The Heist",
                     type: "SQL Injection",
                     briefing: "The crown jewel awaits: the database. It's the vault where all user data, credentials, and secrets are stored. The application's login mechanism directly interpolates user input into SQL queries without sanitization—a catastrophic oversight. With surgical precision, you'll inject SQL commands that manipulate the query logic itself. Bypass authentication entirely. Extract the complete database contents. This is the ultimate intelligence operation—not just reading what they show you, but accessing what they're trying to hide.",
-                    hint: "Access <code>http://localhost/vulnerabilities/sqli/</code> and locate a login form. Try entering SQL syntax into the input fields (like quotes or logical operators) to see how the application responds. Look for ways to alter the query logic.",
-                    tactical_intel: "SQL injection works when user input is concatenated directly into SQL queries without proper escaping. Once you successfully bypass authentication or extract data through malicious SQL, you've proven database compromise.",
+                    hint: "Access <code>http://localhost/vulnerabilities/sqli/</code> and look at the user ID parameter. Start with simple bypasses (<code>' OR '1'='1</code>) and then try UNION to enumerate users. Example foothold: <code>1' UNION SELECT user, password FROM users -- -</code>. The flag is the admin password hash you actually pull from the database: wrap it as <code>flag{&lt;32-hex-hash&gt;}</code>.",
+                    tactical_intel: "Union-based SQLi lets you project arbitrary columns. Dump the <code>user</code> and <code>password</code> fields from <code>users</code>. The admin row's password hash (whatever it currently is) becomes your flag. If the page needs matching column counts, pad with <code>NULL</code> or adjust the number of selected columns. SQLMap alternative: <code>sqlmap -u 'http://localhost/vulnerabilities/sqli/?id=1&Submit=Submit' -p id --batch --dump</code>.",
                     tool: "SQLMap / Manual SQL Injection",
-                    flag: "flag{db_dumped}",
+                    flag: null,
+                    flagCheck: validateSqliFlag,
                     unlocked: false,
                     completed: false
                 },
