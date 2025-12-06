@@ -63,3 +63,5 @@ fi
 if ! ss -tlnp 2>/dev/null | grep -q ':22' && command -v sshd >/dev/null 2>&1; then
     /usr/sbin/sshd || true
 fi
+
+exit 0

@@ -16,7 +16,7 @@ services:
       - ./dvwa_overrides/priv_esc/ghost-cleanup.sh:/usr/local/bin/ghost-cleanup.sh
       - ./dvwa_overrides/mysql/allow-remote.sql:/docker-entrypoint-initdb.d/allow-remote.sql
       - ./dvwa_overrides/ssh/enable-ssh.sh:/usr/local/bin/enable-ssh.sh
-    command: bash -c "/usr/local/bin/enable-ssh.sh && /main.sh"
+    command: bash -c "/usr/local/bin/enable-ssh.sh; /main.sh"
     networks:
       - cyber-range
 
