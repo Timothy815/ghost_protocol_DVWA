@@ -46,4 +46,9 @@ echo 'root:root' | chpasswd
 # Generate host keys if missing
 ssh-keygen -A
 
-service ssh restart
+# Always ensure sshd is running
+if command -v service >/dev/null 2>&1; then
+    service ssh restart || service ssh start
+elif [ -x /etc/init.d/ssh ]; then
+    /etc/init.d/ssh restart || /etc/init.d/ssh start
+fi
