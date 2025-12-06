@@ -10,6 +10,8 @@ services:
       - PHP_X_FRAME_OPTIONS=allow
     volumes:
       - ./dvwa_overrides/csrf_low.php:/var/www/html/vulnerabilities/csrf/source/low.php
+      - ./dvwa_overrides/priv_esc/ghost-cron:/etc/cron.d/ghost-cron
+      - ./dvwa_overrides/priv_esc/ghost-cleanup.sh:/usr/local/bin/ghost-cleanup.sh
     networks:
       - cyber-range
 

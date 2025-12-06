@@ -112,14 +112,14 @@
 
 **Vulnerability**: Combination of all previous vulnerabilities leading to root access
 **Exploitation**: Chain exploits to gain root-level command execution
-**Flag Format**: `flag{root_access_granted}`
+**Flag Format**: `flag{uid=0(...)}` or another root-level proof (legacy `flag{root_access_granted}` still accepted)
 **How to Get It**:
 1. Use previous exploits to establish initial access
-2. Escalate privileges (find SUID binaries, weak sudo config, kernel exploits)
-3. Achieve root access
-4. Submit: `flag{root_access_granted}`
+2. Abuse the writable cron hook: `/etc/cron.d/ghost-cron` runs `/usr/local/bin/ghost-cleanup.sh` as root every minute
+3. Edit `/usr/local/bin/ghost-cleanup.sh` to drop a SUID shell (e.g., `chmod u+s /bin/bash`) or otherwise prove root
+4. Submit proof of root (e.g., `flag{uid=0(root) gid=0(root) groups=0(root)}`)
 
-**Why This Flag?**: Obtaining root access represents complete system compromise.
+**Why This Flag?**: Shows you achieved root via misconfigured cron, not just user-level access.
 
 ---
 
@@ -143,7 +143,7 @@
 | OP-005 | The Heist | SQL Injection | `flag{<admin_password_hash>}` |
 | OP-006 | Viral Signal | XSS (Stored) | `flag{<your_persistent_payload_or_marker>}` |
 | OP-007 | The Trojan | File Upload | `flag{http://localhost/hackable/uploads/<yourfile>.php}` or `flag{<command_output>}` |
-| OP-008 | Ghost in the Machine | Full Compromise | `flag{root_access_granted}` |
+| OP-008 | Ghost in the Machine | Full Compromise | `flag{uid=0(...)}` (or legacy `flag{root_access_granted}`) |
 
 ---
 
