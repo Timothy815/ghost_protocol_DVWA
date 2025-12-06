@@ -532,12 +532,9 @@
             const input = document.getElementById('flagInput').value.trim();
             const msgEl = document.getElementById('flagMessage');
 
-            // Temporary testing backdoor: accept universal override '12345'
-            const backdoor = (input === '12345');
-
-            const isCorrect = backdoor || (typeof m.flagCheck === 'function'
+            const isCorrect = typeof m.flagCheck === 'function'
                 ? m.flagCheck(input)
-                : input === m.flag);
+                : input === m.flag;
 
             if (isCorrect) {
                 msgEl.textContent = '✓ Flag accepted! Mission complete.';
