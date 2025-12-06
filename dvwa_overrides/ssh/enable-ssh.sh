@@ -27,7 +27,7 @@ if ! command -v sshd >/dev/null 2>&1; then
     fi
 fi
 
-mkdir -p /var/run/sshd
+mkdir -p /var/run/sshd /run/sshd
 
 # Ensure password auth and root login are allowed (unsafe on purpose)
 if ! grep -q '^PasswordAuthentication' /etc/ssh/sshd_config; then
