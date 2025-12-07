@@ -536,6 +536,13 @@
             const input = document.getElementById('flagInput').value.trim();
             const msgEl = document.getElementById('flagMessage');
 
+            // Prevent re-submission from farming XP on already completed missions
+            if (m.completed) {
+                msgEl.textContent = '✓ Mission already completed.';
+                msgEl.style.color = '#00ff41';
+                return;
+            }
+
             const isCorrect = typeof m.flagCheck === 'function'
                 ? m.flagCheck(input)
                 : input === m.flag;
